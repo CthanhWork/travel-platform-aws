@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Travel Platform Backend API - Lambda + API Gateway
+
+Parameters:
+  DatabaseUrl:
+    Type: String
+    Description: PostgreSQL connection string
+    NoEcho: true
+
+  RedisUrl:
+    Type: String
+    Description: Redis connection string
+
+  JwtSecret:
+    Type: String
+    Description: JWT secret key
+    NoEcho: true
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: nodejs20.x
+    Architectures:
+      - arm64
+    Environment:
+      Variables:
+        NODE_ENV: production
+        DATABASE_URL: !Ref DatabaseUrl
+        REDIS_URL: !Ref RedisUrl
+        JWT_SECRET: !Ref JwtSecret
+        JWT_EXPIRES_IN: 7d
+        CORS_ORIGIN: "*"
+        AWS_REGION: ap-southeast-2
+
+Resources:
+  # API Gateway
+  TravelApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: travel-platform-api
+      StageName: prod
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+      Auth:
+        DefaultAuthorizer: NONE
+
+  # Lambda Function
+  TravelApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: travel-platform-api
+      CodeUri: .
+      Handler: dist/lambda.handler
+      Description: Travel Platform Backend API
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-01a7bfc6f52696334  # backend-sg
+        SubnetIds:
+          - subnet-027cad4c0c7606dee  # private subnet 1
+          - subnet-08591fdf082e0ac37  # private subnet 2
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+                - s3:DeleteObject
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+                - ses:SendRawEmail
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+                - sqs:ReceiveMessage
+                - sqs:DeleteMessage
+              Resource: '*'
+      Events:
+        ApiRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TravelApi
+            Path: /
+            Method: ANY
+        ApiProxy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TravelApi
+            Path: /{proxy+}
+            Method: ANY
+
+  # CloudWatch Log Group
+  TravelApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${TravelApiFunction}
+      RetentionInDays: 30
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub https://${TravelApi}.execute-api.${AWS::Region}.amazonaws.com/prod
+
+  FunctionArn:
+    Description: Lambda Function ARN
+    Value: !GetAtt TravelApiFunction.Arn

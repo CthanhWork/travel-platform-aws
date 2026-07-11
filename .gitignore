@@ -1,0 +1,77 @@
+# Dependencies and generated builds
+**/node_modules/
+**/dist/
+**/.next/
+**/coverage/
+**/.vercel/
+**/cdk.out/
+**/.cdk.staging/
+**/.terraform/
+**/*.tsbuildinfo
+
+# Environment files and credentials
+.env
+.env.*
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.key
+*.p12
+*.tfstate
+*.tfstate.*
+
+# Lambda packages, dependency layers, and archives
+backend/layer/
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# Logs, command output, and temporary files
+*.log
+*.pid
+*.tmp
+*.temp
+backend/*-output.txt
+backend/*-result.txt
+backend/result.txt
+backend/nul
+
+# Local editor and agent configuration
+.claude/
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Workshop, screenshots, diagrams, and generated documentation bundles
+docs/
+diagrams/
+workshop/
+AWS_Architecture.md
+CHECKLIST_DEPLOY.md
+DEPLOY_GUIDE_FULL.md
+DEPLOY_NOW.md
+NOTE.md
+PROJECT_STATUS.md
+QUICK_START.md
+SUMMARY.txt
+
+# Legacy local deployment helpers containing machine-specific configuration
+backend/*.bat
+backend/scripts/
+backend/BUILD_ON_AWS.md
+backend/DEPLOYMENT.md
+backend/LAMBDA_DEPLOYMENT.md
+backend/QUICKSTART.md
+backend/ecs-task-definition.json
+backend/codebuild-policy.json
+backend/codebuild-trust-policy.json
+backend/lambda-trust-policy.json
+backend/test-auth-local.js
+
+# Root artifacts not used by either application
+/package-lock.json

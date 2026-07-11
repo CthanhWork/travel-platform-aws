@@ -1,0 +1,317 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// Users & Authentication
+// ============================================
+
+model User {
+  id           String   @id @default(uuid())
+  cognitoSub   String?  @unique @map("cognito_sub")
+  email        String   @unique
+  passwordHash String?  @map("password_hash")
+  fullName     String?  @map("full_name")
+  avatarUrl    String?  @map("avatar_url")
+  role         UserRole @default(USER)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  places          Place[]
+  reviews         Review[]
+  reviewReplies   ReviewReply[]
+  trips           Trip[]
+  savedPlaces     SavedPlace[]
+  bookings        Booking[]
+  businessClaims  BusinessClaim[]
+  placeViews      PlaceView[]
+  sentMessages    ChatMessage[]     @relation("SentMessages")
+  receivedMessages ChatMessage[]    @relation("ReceivedMessages")
+  reviewReports   ReviewReport[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  BUSINESS_OWNER
+  ADMIN
+}
+
+// ============================================
+// Places
+// ============================================
+
+model Place {
+  id           String        @id @default(uuid())
+  ownerId      String?       @map("owner_id")
+  name         String
+  description  String?       @db.Text
+  category     PlaceCategory
+  city         String
+  country      String        @default("Vietnam")
+  address      String?       @db.Text
+  latitude     Decimal?      @db.Decimal(10, 8)
+  longitude    Decimal?      @db.Decimal(11, 8)
+  priceRange   String?       @map("price_range")
+  avgRating    Decimal       @default(0) @map("avg_rating") @db.Decimal(2, 1)
+  totalReviews Int           @default(0) @map("total_reviews")
+  images       String[]
+  openingHours Json?         @map("opening_hours")
+  amenities    Json?
+  source       String?
+  sourceId     String?       @map("source_id")
+  sourceUrl    String?       @map("source_url")
+  license      String?
+  imageAttribution Json?     @map("image_attribution")
+  isVerified   Boolean       @default(false) @map("is_verified")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  owner          User?           @relation(fields: [ownerId], references: [id])
+  reviews        Review[]
+  savedBy        SavedPlace[]
+  tripPlaces     TripPlace[]
+  bookings       Booking[]
+  businessClaims BusinessClaim[]
+  views          PlaceView[]
+
+  @@index([category])
+  @@index([city])
+  @@index([ownerId])
+  @@unique([source, sourceId])
+  @@map("places")
+}
+
+enum PlaceCategory {
+  HOTEL
+  RESTAURANT
+  ATTRACTION
+  TOUR
+}
+
+// ============================================
+// Reviews & Ratings
+// ============================================
+
+model Review {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  placeId      String   @map("place_id")
+  rating       Int
+  content      String?  @db.Text
+  images       String[]
+  helpfulCount Int      @default(0) @map("helpful_count")
+  isDeleted    Boolean  @default(false) @map("is_deleted")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user    User          @relation(fields: [userId], references: [id])
+  place   Place         @relation(fields: [placeId], references: [id])
+  replies ReviewReply[]
+  reports ReviewReport[]
+
+  @@index([placeId])
+  @@index([userId])
+  @@map("reviews")
+}
+
+model ReviewReply {
+  id        String   @id @default(uuid())
+  reviewId  String   @map("review_id")
+  userId    String   @map("user_id")
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("review_replies")
+}
+
+model ReviewReport {
+  id         String       @id @default(uuid())
+  reviewId   String       @map("review_id")
+  reporterId String       @map("reporter_id")
+  reason     String       @db.Text
+  status     ReportStatus @default(PENDING)
+  createdAt  DateTime     @default(now()) @map("created_at")
+
+  // Relations
+  review   Review @relation(fields: [reviewId], references: [id])
+  reporter User   @relation(fields: [reporterId], references: [id])
+
+  @@map("review_reports")
+}
+
+enum ReportStatus {
+  PENDING
+  RESOLVED
+  REJECTED
+}
+
+// ============================================
+// Chat Messages
+// ============================================
+
+model ChatMessage {
+  id         String   @id @default(uuid())
+  senderId   String   @map("sender_id")
+  receiverId String   @map("receiver_id")
+  message    String   @db.Text
+  isRead     Boolean  @default(false) @map("is_read")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  sender   User @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@map("chat_messages")
+}
+
+// ============================================
+// Trips & Trip Planner
+// ============================================
+
+model SavedPlace {
+  userId    String   @map("user_id")
+  placeId   String   @map("place_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id])
+  place Place @relation(fields: [placeId], references: [id])
+
+  @@id([userId, placeId])
+  @@map("saved_places")
+}
+
+model Trip {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  name        String
+  description String?  @db.Text
+  isPublic    Boolean  @default(false) @map("is_public")
+  shareToken  String?  @unique @map("share_token")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user   User        @relation(fields: [userId], references: [id])
+  places TripPlace[]
+
+  @@index([userId])
+  @@index([shareToken])
+  @@map("trips")
+}
+
+model TripPlace {
+  tripId      String   @map("trip_id")
+  placeId     String   @map("place_id")
+  day         Int
+  orderInDay  Int      @map("order_in_day")
+  note        String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  trip  Trip  @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  place Place @relation(fields: [placeId], references: [id])
+
+  @@id([tripId, placeId])
+  @@index([tripId])
+  @@map("trip_places")
+}
+
+// ============================================
+// Business & Bookings
+// ============================================
+
+model BusinessClaim {
+  id                    String      @id @default(uuid())
+  userId                String      @map("user_id")
+  placeId               String      @map("place_id")
+  businessName          String      @map("business_name")
+  businessEmail         String      @map("business_email")
+  businessPhone         String?     @map("business_phone")
+  verificationDocUrl    String?     @map("verification_doc_url")
+  status                ClaimStatus @default(PENDING)
+  adminNote             String?     @map("admin_note") @db.Text
+  createdAt             DateTime    @default(now()) @map("created_at")
+  reviewedAt            DateTime?   @map("reviewed_at")
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id])
+  place Place @relation(fields: [placeId], references: [id])
+
+  @@index([status])
+  @@map("business_claims")
+}
+
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Booking {
+  id              String        @id @default(uuid())
+  userId          String        @map("user_id")
+  placeId         String        @map("place_id")
+  bookingDate     DateTime      @map("booking_date") @db.Date
+  numGuests       Int?          @map("num_guests")
+  specialRequests String?       @map("special_requests") @db.Text
+  status          BookingStatus @default(PENDING)
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id])
+  place Place @relation(fields: [placeId], references: [id])
+
+  @@index([userId])
+  @@index([placeId])
+  @@index([status])
+  @@index([bookingDate])
+  @@map("bookings")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+// ============================================
+// Analytics
+// ============================================
+
+model PlaceView {
+  id        String   @id @default(uuid())
+  placeId   String   @map("place_id")
+  userId    String?  @map("user_id")
+  viewedAt  DateTime @default(now()) @map("viewed_at")
+
+  // Relations
+  place Place @relation(fields: [placeId], references: [id])
+  user  User? @relation(fields: [userId], references: [id])
+
+  @@index([placeId])
+  @@index([viewedAt])
+  @@map("place_views")
+}
