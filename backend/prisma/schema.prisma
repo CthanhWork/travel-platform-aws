@@ -206,6 +206,8 @@ model Trip {
   userId      String   @map("user_id")
   name        String
   description String?  @db.Text
+  startDate   DateTime? @map("start_date") @db.Date
+  endDate     DateTime? @map("end_date") @db.Date
   isPublic    Boolean  @default(false) @map("is_public")
   shareToken  String?  @unique @map("share_token")
   createdAt   DateTime @default(now()) @map("created_at")

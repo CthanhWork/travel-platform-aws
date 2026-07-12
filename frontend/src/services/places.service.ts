@@ -46,7 +46,7 @@ export interface PlacesResponse {
 
 // The API returns database field names and nests pagination under `data`.
 // Convert that response once so pages can rely on a stable frontend shape.
-const toPlace = (place: any): Place => ({
+export const toPlace = (place: any): Place => ({
   id: place.id,
   name: place.name || '',
   description: place.description || '',

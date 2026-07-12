@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api-client';
-import { Place } from './places.service';
+import { Place, toPlace } from './places.service';
 
 export interface Trip {
   id: string;
@@ -32,25 +32,37 @@ export interface CreateTripRequest {
   isPublic: boolean;
 }
 
+const toTripPlace = (tripPlace: any): TripPlace => ({
+  ...tripPlace,
+  notes: tripPlace.note ?? tripPlace.notes,
+  place: toPlace(tripPlace.place),
+});
+
+const toTrip = (trip: any): Trip => ({
+  ...trip,
+  places: Array.isArray(trip.places) ? trip.places.map(toTripPlace) : [],
+});
+
 export const tripsService = {
   async getTrips(): Promise<Trip[]> {
     const response = await apiClient.get('/trips');
-    return response.data;
+    const trips = response.data.data;
+    return Array.isArray(trips) ? trips.map(toTrip) : [];
   },
 
   async getTrip(id: string): Promise<Trip> {
     const response = await apiClient.get(`/trips/${id}`);
-    return response.data;
+    return toTrip(response.data.data);
   },
 
   async createTrip(data: CreateTripRequest): Promise<Trip> {
     const response = await apiClient.post('/trips', data);
-    return response.data;
+    return toTrip(response.data.data);
   },
 
   async updateTrip(id: string, data: Partial<CreateTripRequest>): Promise<Trip> {
     const response = await apiClient.put(`/trips/${id}`, data);
-    return response.data;
+    return toTrip(response.data.data);
   },
 
   async deleteTrip(id: string): Promise<void> {
@@ -62,18 +74,18 @@ export const tripsService = {
       placeId,
       day,
       orderInDay,
-      notes,
+      note: notes,
     });
-    return response.data;
+    return toTripPlace(response.data.data);
   },
 
   async updateTripPlace(tripId: string, placeId: string, day: number, orderInDay: number, notes?: string): Promise<TripPlace> {
     const response = await apiClient.put(`/trips/${tripId}/places/${placeId}`, {
       day,
       orderInDay,
-      notes,
+      note: notes,
     });
-    return response.data;
+    return toTripPlace(response.data.data);
   },
 
   async removePlaceFromTrip(tripId: string, placeId: string): Promise<void> {
@@ -82,6 +94,6 @@ export const tripsService = {
 
   async getSharedTrip(shareToken: string): Promise<Trip> {
     const response = await apiClient.get(`/trips/share/${shareToken}`);
-    return response.data;
+    return toTrip(response.data.data);
   },
 };

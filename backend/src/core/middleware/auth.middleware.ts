@@ -40,6 +40,29 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
   }
 };
 
+export const optionalAuthMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader?.startsWith('Bearer ')) {
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(authHeader.substring(7), config.jwtSecret) as any;
+    req.user = {
+      userId: decoded.userId,
+      email: decoded.email,
+      role: decoded.role,
+    };
+    return next();
+  } catch {
+    return res.status(401).json({
+      success: false,
+      error: 'Invalid or expired token'
+    });
+  }
+};
+
 export const requireRole = (...roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {

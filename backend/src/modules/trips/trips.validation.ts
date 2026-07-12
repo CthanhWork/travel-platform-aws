@@ -9,13 +9,20 @@ export const savePlaceSchema = z.object({
 export const createTripSchema = z.object({
   name: z.string().min(3, 'Trip name must be at least 3 characters').max(100),
   description: z.string().max(500, 'Description is too long').optional(),
+  startDate: z.coerce.date().optional(),
+  endDate: z.coerce.date().optional(),
   isPublic: z.boolean().optional().default(false),
+}).refine((data) => !data.startDate || !data.endDate || data.endDate >= data.startDate, {
+  message: 'End date must be on or after start date',
+  path: ['endDate'],
 });
 
 // Update trip validation
 export const updateTripSchema = z.object({
   name: z.string().min(3).max(100).optional(),
   description: z.string().max(500).optional(),
+  startDate: z.coerce.date().optional(),
+  endDate: z.coerce.date().optional(),
   isPublic: z.boolean().optional(),
 });
 

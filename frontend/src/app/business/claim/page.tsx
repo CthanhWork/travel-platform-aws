@@ -18,7 +18,9 @@ export default function ClaimPlacePage() {
 function ClaimPlaceContent() {
   const router = useRouter();
   const [selectedPlaceId, setSelectedPlaceId] = useState('');
-  const [claimReason, setClaimReason] = useState('');
+  const [businessName, setBusinessName] = useState('');
+  const [businessEmail, setBusinessEmail] = useState('');
+  const [businessPhone, setBusinessPhone] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: places } = useQuery({
@@ -28,7 +30,10 @@ function ClaimPlaceContent() {
   });
 
   const claimMutation = useMutation({
-    mutationFn: () => businessService.claimPlace(selectedPlaceId, claimReason),
+    mutationFn: () => businessService.claimPlace({
+      placeId: selectedPlaceId, businessName, businessEmail,
+      businessPhone: businessPhone || undefined,
+    }),
     onSuccess: () => {
       router.push('/business');
     },
@@ -36,7 +41,7 @@ function ClaimPlaceContent() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedPlaceId && claimReason) {
+    if (selectedPlaceId && businessName && businessEmail) {
       claimMutation.mutate();
     }
   };
@@ -114,14 +119,19 @@ function ClaimPlaceContent() {
                 <label className="block text-sm font-medium text-ink mb-2">
                   Why are you claiming this place? *
                 </label>
-                <textarea
-                  value={claimReason}
-                  onChange={(e) => setClaimReason(e.target.value)}
-                  rows={5}
+                <input
+                  value={businessName}
+                  onChange={(e) => setBusinessName(e.target.value)}
                   className="w-full rounded-lg border border-border bg-surface px-4 py-3 text-ink placeholder:text-muted/50 focus:border-terracotta focus:outline-none focus:ring-2 focus:ring-terracotta/20"
-                  placeholder="Please provide proof of ownership (business registration, official documents, website, etc.)"
+                  placeholder="Registered business name"
                   required
                 />
+                <input type="email" value={businessEmail} onChange={(e) => setBusinessEmail(e.target.value)}
+                  className="mt-3 w-full rounded-lg border border-border bg-surface px-4 py-3 text-ink"
+                  placeholder="Business email" required />
+                <input value={businessPhone} onChange={(e) => setBusinessPhone(e.target.value)}
+                  className="mt-3 w-full rounded-lg border border-border bg-surface px-4 py-3 text-ink"
+                  placeholder="Business phone (optional)" />
                 <p className="mt-1 text-xs text-muted">
                   Provide detailed information to help us verify your claim
                 </p>
@@ -132,7 +142,7 @@ function ClaimPlaceContent() {
             <div className="flex gap-4">
               <button
                 type="submit"
-                disabled={!selectedPlaceId || !claimReason || claimMutation.isPending}
+                disabled={!selectedPlaceId || !businessName || !businessEmail || claimMutation.isPending}
                 className="rounded-full bg-terracotta px-8 py-3 text-sm font-medium text-white transition hover:bg-terracotta-hover disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {claimMutation.isPending ? 'Submitting...' : 'Submit Claim'}

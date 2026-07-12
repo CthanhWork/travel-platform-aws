@@ -15,7 +15,6 @@ import placesRoutes from './modules/places/places.routes';
 import reviewsRoutes from './modules/reviews/reviews.routes';
 import tripsRoutes from './modules/trips/trips.routes';
 import businessRoutes from './modules/business/business.routes';
-import migrationRoutes from './modules/migration/migration.routes';
 
 // Load environment variables
 dotenv.config();
@@ -41,7 +40,6 @@ app.use('/api/places', placesRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/trips', tripsRoutes);
 app.use('/api/business', businessRoutes);
-app.use('/api/migration', migrationRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {

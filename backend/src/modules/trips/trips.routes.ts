@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authMiddleware } from '../../core/middleware/auth.middleware';
+import { authMiddleware, optionalAuthMiddleware } from '../../core/middleware/auth.middleware';
 import { tripsController } from './trips.controller';
 
 const router = Router();
@@ -14,7 +14,7 @@ router.get('/share/:shareToken', tripsController.getTripByShareToken.bind(tripsC
 
 // Trip routes (all require authentication)
 router.get('/', authMiddleware, tripsController.getAllTrips.bind(tripsController));
-router.get('/:id', tripsController.getTripById.bind(tripsController)); // Auth optional
+router.get('/:id', optionalAuthMiddleware, tripsController.getTripById.bind(tripsController));
 router.post('/', authMiddleware, tripsController.createTrip.bind(tripsController));
 router.put('/:id', authMiddleware, tripsController.updateTrip.bind(tripsController));
 router.delete('/:id', authMiddleware, tripsController.deleteTrip.bind(tripsController));

@@ -278,6 +278,8 @@ export class TripsService {
           userId,
           name: data.name,
           description: data.description,
+          startDate: data.startDate,
+          endDate: data.endDate,
           isPublic: data.isPublic || false,
           shareToken,
         },
@@ -331,6 +333,8 @@ export class TripsService {
         data: {
           name: data.name,
           description: data.description,
+          startDate: data.startDate,
+          endDate: data.endDate,
           isPublic: data.isPublic,
           shareToken,
         },

@@ -4,6 +4,8 @@ export interface Booking {
   id: string;
   userId: string;
   placeId: string;
+  bookingDate: string;
+  numGuests?: number;
   checkInDate: string;
   checkOutDate?: string;
   guests: number;
@@ -25,7 +27,10 @@ export interface BusinessClaim {
   userId: string;
   placeId: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  claimReason: string;
+  businessName: string;
+  businessEmail: string;
+  businessPhone?: string;
+  adminNote?: string;
   createdAt: string;
   place: {
     id: string;
@@ -38,67 +43,88 @@ export interface BusinessClaim {
 
 export interface CreateBookingRequest {
   placeId: string;
-  checkInDate: string;
-  checkOutDate?: string;
-  guests: number;
-  totalPrice: number;
+  bookingDate: string;
+  numGuests?: number;
   specialRequests?: string;
 }
 
+export interface CreateClaimRequest {
+  placeId: string;
+  businessName: string;
+  businessEmail: string;
+  businessPhone?: string;
+  verificationDocUrl?: string;
+}
+
+const toBooking = (booking: any): Booking => ({
+  ...booking,
+  checkInDate: booking.bookingDate,
+  guests: booking.numGuests || 1,
+  totalPrice: 0,
+});
+
 export const businessService = {
   // Business Claims
-  async claimPlace(placeId: string, claimReason: string): Promise<BusinessClaim> {
-    const response = await apiClient.post('/business/claim-place', { placeId, claimReason });
-    return response.data;
+  async claimPlace(data: CreateClaimRequest): Promise<BusinessClaim> {
+    const response = await apiClient.post('/business/claims', data);
+    return response.data.data;
   },
 
   async getMyClaims(): Promise<BusinessClaim[]> {
-    const response = await apiClient.get('/business/my-claims');
-    return response.data;
+    const response = await apiClient.get('/business/claims/my');
+    return response.data.data;
   },
 
   // Bookings
   async createBooking(data: CreateBookingRequest): Promise<Booking> {
     const response = await apiClient.post('/business/bookings', data);
-    return response.data;
+    return toBooking(response.data.data);
   },
 
   async getMyBookings(): Promise<Booking[]> {
-    const response = await apiClient.get('/business/bookings/my-bookings');
-    return response.data;
+    const response = await apiClient.get('/business/bookings/my');
+    return Array.isArray(response.data.data) ? response.data.data.map(toBooking) : [];
   },
 
   async updateBookingStatus(bookingId: string, status: string): Promise<Booking> {
     const response = await apiClient.put(`/business/bookings/${bookingId}/status`, { status });
-    return response.data;
+    return toBooking(response.data.data);
   },
 
   async cancelBooking(bookingId: string): Promise<{ message: string }> {
-    const response = await apiClient.post(`/business/bookings/${bookingId}/cancel`);
-    return response.data;
+    const response = await apiClient.delete(`/business/bookings/${bookingId}`);
+    return response.data.data;
   },
 
   // Business Owner - View bookings for owned places
-  async getPlaceBookings(): Promise<Booking[]> {
-    const response = await apiClient.get('/business/bookings');
-    return response.data;
+  async getPlaceBookings(placeId?: string): Promise<Booking[]> {
+    let targetPlaceId = placeId;
+    if (!targetPlaceId) {
+      const claims = await this.getMyClaims();
+      targetPlaceId = claims.find((claim) => claim.status === 'APPROVED')?.placeId;
+    }
+    if (!targetPlaceId) return [];
+    const response = await apiClient.get(`/business/places/${targetPlaceId}/bookings`);
+    return Array.isArray(response.data.data) ? response.data.data.map(toBooking) : [];
   },
 };
 
 // Admin Service
 export const adminService = {
   async getAllClaims(): Promise<BusinessClaim[]> {
-    const response = await apiClient.get('/business/admin/claims');
-    return response.data;
+    const response = await apiClient.get('/business/claims/pending');
+    return response.data.data;
   },
 
   async reviewClaim(claimId: string, approved: boolean): Promise<{ message: string }> {
-    const response = await apiClient.post(`/business/admin/claims/${claimId}/review`, { approved });
-    return response.data;
+    const response = await apiClient.put(`/business/claims/${claimId}`, {
+      status: approved ? 'APPROVED' : 'REJECTED',
+    });
+    return response.data.data;
   },
 
   async getDashboardStats(): Promise<any> {
     const response = await apiClient.get('/business/admin/dashboard');
-    return response.data;
+    return response.data.data;
   },
 };

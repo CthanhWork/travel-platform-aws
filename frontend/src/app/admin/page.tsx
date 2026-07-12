@@ -134,8 +134,8 @@ function AdminContent() {
                   </div>
 
                   <div className="mb-4 rounded-lg bg-white p-4 border-l-4 border-terracotta">
-                    <div className="text-sm font-medium text-ink mb-1">Claim Reason:</div>
-                    <p className="text-sm text-muted">{claim.claimReason}</p>
+                    <div className="text-sm font-medium text-ink mb-1">Business details:</div>
+                    <p className="text-sm text-muted">{claim.businessName} · {claim.businessEmail}</p>
                   </div>
 
                   <div className="flex gap-3">
