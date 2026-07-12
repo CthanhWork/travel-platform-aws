@@ -26,7 +26,6 @@ export const registerSchema = z.object({
     // Accept names written with Vietnamese and other Unicode letters.
     .regex(/^[\p{L}\p{M}\s'-]+$/u, 'Full name must contain only letters, spaces, hyphens, or apostrophes'),
 
-  role: z.enum(['USER', 'BUSINESS_OWNER', 'ADMIN']).optional(),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;

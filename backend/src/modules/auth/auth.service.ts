@@ -56,7 +56,7 @@ export class AuthService {
           email: input.email,
           passwordHash: hashedPassword,
           fullName: input.fullName,
-          role: input.role || 'USER',
+          role: 'USER',
           cognitoSub: null, // Null for now, will be populated if Cognito is used
         },
         select: {
