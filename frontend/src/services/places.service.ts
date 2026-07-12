@@ -44,6 +44,20 @@ export interface PlacesResponse {
   totalPages: number;
 }
 
+const formatOpeningHours = (openingHours: unknown): string | undefined => {
+  if (!openingHours) return undefined;
+  if (typeof openingHours === 'string') return openingHours;
+  if (typeof openingHours !== 'object' || Array.isArray(openingHours)) return undefined;
+
+  return Object.entries(openingHours as Record<string, unknown>)
+    .map(([label, hours]) => {
+      const readableLabel = label.charAt(0).toUpperCase() + label.slice(1);
+      const readableHours = Array.isArray(hours) ? hours.join(', ') : String(hours);
+      return `${readableLabel}: ${readableHours}`;
+    })
+    .join(' | ');
+};
+
 // The API returns database field names and nests pagination under `data`.
 // Convert that response once so pages can rely on a stable frontend shape.
 export const toPlace = (place: any): Place => ({
@@ -63,7 +77,7 @@ export const toPlace = (place: any): Place => ({
   website: place.website,
   phone: place.phone,
   email: place.email,
-  openingHours: place.openingHours,
+  openingHours: formatOpeningHours(place.openingHours),
   ownerId: place.ownerId,
   createdAt: place.createdAt,
   isSaved: place.isSaved,
