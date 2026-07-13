@@ -8,6 +8,7 @@ import { placesService } from '@/services/places.service';
 import { reviewsService } from '@/services/reviews.service';
 import { useAuthStore } from '@/stores/auth-store';
 import { formatDate } from '@/lib/utils';
+import { BookingCard } from '@/components/BookingCard';
 
 export default function PlaceDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -135,7 +136,7 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
         </div>
       </div>
 
-      <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-terracotta-tint px-4 py-1.5 text-sm font-medium text-terracotta">
@@ -168,8 +169,9 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
           </div>
         </div>
 
+        <div className="mb-12 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         {/* Description */}
-        <div className="mb-12 rounded-2xl border border-border bg-white p-8">
+        <div className="rounded-2xl border border-border bg-white p-8">
           <h2 className="font-serif text-2xl font-semibold text-ink mb-4">About</h2>
           <p className="text-muted leading-relaxed">{place.description}</p>
 
@@ -222,6 +224,8 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
               </div>
             )}
           </div>
+        </div>
+        <BookingCard placeId={place.id} placeName={place.name} />
         </div>
 
         {/* Reviews Section */}

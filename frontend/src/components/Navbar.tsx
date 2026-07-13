@@ -44,6 +44,9 @@ export function Navbar() {
                 <Link href="/saved" className="text-gray-700 hover:text-gray-900 transition">
                   Saved
                 </Link>
+                <Link href="/bookings" className="text-gray-700 hover:text-gray-900 transition">
+                  Bookings
+                </Link>
                 {user?.role === 'BUSINESS_OWNER' && (
                   <Link href="/business" className="text-gray-700 hover:text-gray-900 transition">
                     Business
