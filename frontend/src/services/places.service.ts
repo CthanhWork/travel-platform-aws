@@ -24,6 +24,11 @@ export interface Place {
   sourceUrl?: string;
   license?: string;
   isVerified?: boolean;
+  amenities?: {
+    highlights?: string[];
+    facilities?: string[];
+    [key: string]: unknown;
+  };
   ownerId?: string;
   createdAt: string;
   isSaved?: boolean;
@@ -86,6 +91,7 @@ export const toPlace = (place: any): Place => ({
   sourceUrl: place.sourceUrl,
   license: place.license,
   isVerified: place.isVerified,
+  amenities: place.amenities,
   ownerId: place.ownerId,
   createdAt: place.createdAt,
   isSaved: place.isSaved,

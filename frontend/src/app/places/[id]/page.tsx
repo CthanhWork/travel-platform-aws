@@ -137,6 +137,18 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
       </div>
 
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+        {place.imageUrls.length > 1 ? (
+          <section className="mb-10">
+            <div className="mb-4 flex items-end justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta">Gallery</p><h2 className="mt-1 font-serif text-3xl text-ink">A closer look</h2></div><p className="text-sm text-muted">{place.imageUrls.length} photos</p></div>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              {place.imageUrls.slice(1, 5).map((imageUrl, index) => (
+                <div key={imageUrl} className={`group overflow-hidden rounded-2xl bg-ink ${index === 0 ? 'col-span-2 row-span-2 md:col-span-2' : ''}`}>
+                  <img src={imageUrl} alt={`${place.name} view ${index + 2}`} loading="lazy" className={`w-full object-cover opacity-90 transition duration-500 group-hover:scale-105 group-hover:opacity-100 ${index === 0 ? 'h-full min-h-64' : 'h-40 md:h-48'}`} />
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
         <div className="mb-10 grid grid-cols-2 gap-3 md:grid-cols-4">
           <div className="rounded-2xl border border-border bg-white p-5"><p className="text-xs uppercase tracking-wider text-muted">Rating</p><p className="mt-2 font-serif text-2xl text-ink">{place.rating ? `${place.rating.toFixed(1)} / 5` : 'New'}</p><p className="mt-1 text-xs text-muted">{place.reviewCount} reviews</p></div>
           <div className="rounded-2xl border border-border bg-white p-5"><p className="text-xs uppercase tracking-wider text-muted">Price level</p><p className="mt-2 font-serif text-2xl text-ink">{place.priceLevel ? '$'.repeat(place.priceLevel) : 'Not listed'}</p><p className="mt-1 text-xs text-muted">Local range</p></div>
@@ -181,6 +193,8 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta">Discover</p>
           <h2 className="mt-2 font-serif text-3xl text-ink">About this place</h2>
           <p className="mt-4 text-muted leading-8">{place.description}</p>
+          {place.amenities?.highlights?.length ? <div className="mt-7"><p className="text-xs font-semibold uppercase tracking-wider text-muted">Highlights</p><div className="mt-3 flex flex-wrap gap-2">{place.amenities.highlights.map((item) => <span key={item} className="rounded-full bg-terracotta-tint px-4 py-2 text-sm font-medium text-terracotta">{item}</span>)}</div></div> : null}
+          {place.amenities?.facilities?.length ? <div className="mt-7 grid gap-3 sm:grid-cols-3">{place.amenities.facilities.map((item) => <div key={item} className="rounded-xl border border-border bg-surface p-4 text-sm font-medium text-ink"><span className="mr-2 text-terracotta">✓</span>{item}</div>)}</div> : null}
 
           {/* Contact Info */}
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
