@@ -10,10 +10,14 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, hasHydrated } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
+    if (!hasHydrated) {
+      return;
+    }
+
     if (!isAuthenticated) {
       router.push('/login');
       return;
@@ -26,9 +30,9 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
         router.push('/');
       }
     }
-  }, [isAuthenticated, user, requiredRole, router]);
+  }, [hasHydrated, isAuthenticated, user, requiredRole, router]);
 
-  if (!isAuthenticated) {
+  if (!hasHydrated || !isAuthenticated) {
     return null;
   }
 
