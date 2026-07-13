@@ -20,6 +20,10 @@ export interface Place {
   phone?: string;
   email?: string;
   openingHours?: string;
+  source?: string;
+  sourceUrl?: string;
+  license?: string;
+  isVerified?: boolean;
   ownerId?: string;
   createdAt: string;
   isSaved?: boolean;
@@ -78,6 +82,10 @@ export const toPlace = (place: any): Place => ({
   phone: place.phone,
   email: place.email,
   openingHours: formatOpeningHours(place.openingHours),
+  source: place.source,
+  sourceUrl: place.sourceUrl,
+  license: place.license,
+  isVerified: place.isVerified,
   ownerId: place.ownerId,
   createdAt: place.createdAt,
   isSaved: place.isSaved,

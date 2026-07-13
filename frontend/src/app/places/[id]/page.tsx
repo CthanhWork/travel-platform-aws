@@ -114,12 +114,12 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
   return (
     <div className="min-h-screen bg-cream">
       {/* Hero Image */}
-      <div className="relative h-96 bg-gray-200">
+      <div className="relative h-[32rem] overflow-hidden bg-ink">
         {place.imageUrls && place.imageUrls.length > 0 ? (
           <img
             src={place.imageUrls[0]}
             alt={place.name}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover opacity-85"
           />
         ) : (
           <div className="flex h-full items-center justify-center text-8xl">📍</div>
@@ -137,6 +137,12 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
       </div>
 
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mb-10 grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="rounded-2xl border border-border bg-white p-5"><p className="text-xs uppercase tracking-wider text-muted">Rating</p><p className="mt-2 font-serif text-2xl text-ink">{place.rating ? `${place.rating.toFixed(1)} / 5` : 'New'}</p><p className="mt-1 text-xs text-muted">{place.reviewCount} reviews</p></div>
+          <div className="rounded-2xl border border-border bg-white p-5"><p className="text-xs uppercase tracking-wider text-muted">Price level</p><p className="mt-2 font-serif text-2xl text-ink">{place.priceLevel ? '$'.repeat(place.priceLevel) : 'Not listed'}</p><p className="mt-1 text-xs text-muted">Local range</p></div>
+          <div className="rounded-2xl border border-border bg-white p-5"><p className="text-xs uppercase tracking-wider text-muted">Destination</p><p className="mt-2 font-serif text-2xl text-ink">{place.city}</p><p className="mt-1 text-xs text-muted">{place.country}</p></div>
+          <div className="rounded-2xl border border-border bg-white p-5"><p className="text-xs uppercase tracking-wider text-muted">Booking</p><p className="mt-2 font-serif text-2xl text-ink">Request</p><p className="mt-1 text-xs text-muted">Confirmation required</p></div>
+        </div>
         {/* Header */}
         <div className="mb-8">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-terracotta-tint px-4 py-1.5 text-sm font-medium text-terracotta">
@@ -171,9 +177,10 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
 
         <div className="mb-12 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         {/* Description */}
-        <div className="rounded-2xl border border-border bg-white p-8">
-          <h2 className="font-serif text-2xl font-semibold text-ink mb-4">About</h2>
-          <p className="text-muted leading-relaxed">{place.description}</p>
+        <div className="overflow-hidden rounded-3xl border border-border bg-white p-8 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta">Discover</p>
+          <h2 className="mt-2 font-serif text-3xl text-ink">About this place</h2>
+          <p className="mt-4 text-muted leading-8">{place.description}</p>
 
           {/* Contact Info */}
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -223,6 +230,10 @@ export default function PlaceDetailPage({ params }: { params: { id: string } }) 
                 </div>
               </div>
             )}
+          </div>
+          <div className="mt-8 grid gap-4 border-t border-border pt-6 sm:grid-cols-2">
+            <div><p className="text-xs uppercase tracking-wider text-muted">Coordinates</p><p className="mt-2 font-medium text-ink">{place.latitude?.toFixed(5)}, {place.longitude?.toFixed(5)}</p></div>
+            <div><p className="text-xs uppercase tracking-wider text-muted">Data source</p><p className="mt-2 font-medium text-ink">{place.source === 'openstreetmap' ? 'OpenStreetMap contributors' : place.source || 'TravelPlatform'}</p>{place.sourceUrl ? <a href={place.sourceUrl} target="_blank" rel="noreferrer" className="mt-1 inline-block text-sm text-terracotta hover:underline">View original listing ↗</a> : null}</div>
           </div>
         </div>
         <BookingCard placeId={place.id} placeName={place.name} />
