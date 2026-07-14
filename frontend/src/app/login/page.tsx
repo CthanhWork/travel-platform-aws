@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { authService } from '@/services/auth.service';
-import { useAuthStore } from '@/stores/auth-store';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { authService } from "@/services/auth.service";
+import { useAuthStore } from "@/stores/auth-store";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -19,7 +19,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const { setAuth } = useAuthStore();
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -32,14 +32,23 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
       const response = await authService.login(data);
       setAuth(response.user, response.accessToken, response.refreshToken);
-      router.push('/places');
+      const requestedPath = new URLSearchParams(window.location.search).get(
+        "redirect",
+      );
+      const safeRedirect =
+        requestedPath?.startsWith("/") && !requestedPath.startsWith("//")
+          ? requestedPath
+          : "/places";
+      router.push(safeRedirect);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      setError(
+        err.response?.data?.message || "Login failed. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -69,35 +78,45 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-ink mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-ink mb-2"
+              >
                 Email Address
               </label>
               <input
                 id="email"
                 type="email"
-                {...register('email')}
+                {...register("email")}
                 className="w-full rounded-lg border border-border bg-surface px-4 py-3 text-ink placeholder:text-muted/50 focus:border-terracotta focus:outline-none focus:ring-2 focus:ring-terracotta/20"
                 placeholder="you@example.com"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-ink mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-ink mb-2"
+              >
                 Password
               </label>
               <input
                 id="password"
                 type="password"
-                {...register('password')}
+                {...register("password")}
                 className="w-full rounded-lg border border-border bg-surface px-4 py-3 text-ink placeholder:text-muted/50 focus:border-terracotta focus:outline-none focus:ring-2 focus:ring-terracotta/20"
                 placeholder="••••••••"
               />
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.password.message}
+                </p>
               )}
             </div>
 
@@ -117,14 +136,17 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full rounded-full bg-terracotta px-8 py-3.5 text-sm font-medium text-white shadow-sm transition hover:bg-terracotta-hover hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {isLoading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 
           {/* Register Link */}
           <div className="mt-6 text-center text-sm text-muted">
-            Don't have an account?{' '}
-            <Link href="/register" className="text-terracotta hover:text-terracotta-hover font-medium transition">
+            Don't have an account?{" "}
+            <Link
+              href="/register"
+              className="text-terracotta hover:text-terracotta-hover font-medium transition"
+            >
               Create one
             </Link>
           </div>
